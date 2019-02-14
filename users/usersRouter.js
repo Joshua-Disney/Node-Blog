@@ -36,8 +36,32 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Get user posts
+router.get("/:id/posts", async (req, res) => {
+  try {
+    const userPosts = await Users.getUserPosts(req.params.id);
+    if (userPosts) {
+      res.status(200).json(userPosts);
+    } else {
+      res.status(404).json({
+        message: "The user with the specified ID does not exist."
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Error recieving the user"
+    });
+  }
+});
+
 // Create a new user
 router.post("/", async (req, res) => {
+  if (!req.body.name) {
+    res.status(422).json({ message: "name required" });
+  } else {
+    req.body.name = req.body.name.toUpperCase();
+  }
   try {
     const user = await Users.insert(req.body);
     res.status(201).json({
@@ -74,7 +98,12 @@ router.delete("/", async (req, res) => {
 });
 
 // Update a user
-router.put("/", async (req, res) => {
+router.put("/:id", async (req, res) => {
+  if (!req.body.name) {
+    res.status(422).json({ message: "name required" });
+  } else {
+    req.body.name = req.body.name.toUpperCase();
+  }
   try {
     const user = await Users.update(req.params.id, req.body);
     if (user) {
